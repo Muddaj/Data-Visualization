@@ -17,7 +17,6 @@ library(ggridges)
 # Data 
 df <- gapminder
 head(df, 5)
-sapply(df, class)
 
 # I construct log versions of the continuous variables 
 df$loglifeExp <- log(df$lifeExp)
