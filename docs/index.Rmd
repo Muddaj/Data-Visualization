@@ -1,0 +1,75 @@
+---
+title: "Data Visualizations"
+author: "Max Johansson"
+date: "Spring 2024"
+output: html_document
+---
+
+In this project I showcase some of my visualization skills in R. In the first chunk of code, I perform some data manipulation, 
+```{r, message=FALSE, warning=FALSE}
+rm(list = ls())
+
+# Packages 
+library(ggplot2)
+library(gapminder)
+library(ggridges)
+
+# Data 
+df <- gapminder
+head(df, 5)
+sapply(df, class)
+
+# I construct log versions of the continuous variables 
+df$loglifeExp <- log(df$lifeExp)
+df$loggdpPercap <- log(df$gdpPercap)
+df$logpop <- df$pop
+
+# I transform the year variable to a factor 
+df$year <- as.factor(df$year)
+
+# I exclude Oceania
+df <- subset(df, continent != "Oceania")
+
+```
+
+First I want to find out if what the trend has been with regard to life expectancy in the world. Note that the data excludes Oceania. It appears that the median life expectancy (the line separating the central quantiles) has increased over time. The density in 1952 are clearly different from the density of 2007, in 1952 the highest density is somewhere between 25 and 50 and the highest density is around 75. 
+```{r, warning = FALSE, message=FALSE}
+# Plot Life Expectancy over Time
+ggplot(
+  data = df, 
+  aes(x = lifeExp, y = year, 
+      fill = stat(quantile)))+
+  stat_density_ridges(geom = "density_ridges_gradient", 
+                      calc_ecdf = TRUE, 
+                      quantiles = 4, 
+                      quantile_lines = TRUE)+
+  labs(title = "Life Expectancy over Time",
+       caption = "Note: Oceania Excluded")+
+  xlab("Life Expectancy")+
+  ylab("Year")+
+  theme_bw()
+
+```
+
+To add some nuance to the illustration, I visualize the life expectancy over time per continent. It appears to have existed differences between the continents according to the visual. For example, the life expectancy spread for Europe appears to have been less over time. 
+
+```{r, warning = FALSE, message=FALSE}
+# Plot Life Expectancy over Time
+ggplot(
+  data = df, 
+  aes(x = lifeExp, y = year, 
+      fill = stat(quantile)))+
+  stat_density_ridges(geom = "density_ridges_gradient", 
+                      calc_ecdf = TRUE, 
+                      quantiles = 4, 
+                      quantile_lines = TRUE)+
+  labs(title = "Life Expectancy over Time by Contintent",
+       caption = "Note: Oceania Excluded")+
+  xlab("Life Expectancy")+
+  ylab("Year")+
+  facet_wrap(~continent)+
+  theme_bw()
+```
+
+# References: 
+ggplot2: https://cran.r-project.org/package=ggplot2, gapminder: https://cran.r-project.org/package=gapminder, ggridges: https://cran.r-project.org/package=ggridges
