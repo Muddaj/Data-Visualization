@@ -42,7 +42,7 @@ ggplot(
                       calc_ecdf = TRUE, 
                       quantiles = 4, 
                       quantile_lines = TRUE)+
-  labs(title = "Life Expectancy over Time",
+  labs(title = "Life Expectancy over Time in the World",
        caption = "Note: Oceania Excluded")+
   xlab("Life Expectancy")+
   ylab("Year")+
