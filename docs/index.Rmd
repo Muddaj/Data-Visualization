@@ -23,8 +23,9 @@ df$loglifeExp <- log(df$lifeExp)
 df$loggdpPercap <- log(df$gdpPercap)
 df$logpop <- df$pop
 
-# I transform the year variable to a factor 
+# I want one factor version of the year variable, and one numeric
 df$year <- as.factor(df$year)
+df$yearnum <- as.numeric(df$year)
 
 # I exclude Oceania
 df <- subset(df, continent != "Oceania")
@@ -36,14 +37,18 @@ First I want to find out if what the trend has been with regard to life expectan
 # Plot Life Expectancy over Time
 ggplot(
   data = df, 
-  aes(x = lifeExp, y = year, 
-      fill = stat(quantile)))+
-  stat_density_ridges(geom = "density_ridges_gradient", 
-                      calc_ecdf = TRUE, 
-                      quantiles = 4, 
-                      quantile_lines = TRUE)+
-  labs(title = "Life Expectancy over Time in the World",
-       caption = "Note: Oceania Excluded")+
+  aes(
+    x = lifeExp, 
+    y = year,
+    fill = stat(quantile)))+
+  stat_density_ridges(
+    geom = "density_ridges_gradient", 
+    calc_ecdf = TRUE,
+    quantiles = 4,
+    quantile_lines = TRUE)+
+  labs(
+    title = "Life Expectancy over Time in the World",
+    caption = "Note: Oceania Excluded")+
   xlab("Life Expectancy")+
   ylab("Year")+
   theme_bw()
@@ -56,19 +61,70 @@ To add some nuance to the illustration, I visualize the life expectancy over tim
 # Plot Life Expectancy over Time
 ggplot(
   data = df, 
-  aes(x = lifeExp, y = year, 
+  aes(
+    x = lifeExp, 
+    y = year, 
       fill = stat(quantile)))+
-  stat_density_ridges(geom = "density_ridges_gradient", 
-                      calc_ecdf = TRUE, 
-                      quantiles = 4, 
-                      quantile_lines = TRUE)+
-  labs(title = "Life Expectancy over Time by Contintent",
-       caption = "Note: Oceania Excluded")+
+  stat_density_ridges(
+    geom = "density_ridges_gradient", 
+    calc_ecdf = TRUE, 
+    quantiles = 4, 
+    quantile_lines = TRUE)+
+  labs(
+    title = "Life Expectancy over Time by Contintent",
+    caption = "Note: Oceania Excluded")+
   xlab("Life Expectancy")+
   ylab("Year")+
   facet_wrap(~continent)+
   theme_bw()
 ```
+
+Similarly, I think that the same type of illustration is well suited for displaying the evolution of GDP/ Capita per contintent. I use take the log of GDP/ Capita. 
+```{r, warning = FALSE, message=FALSE}
+# Plot log gdp per capita ver Time
+ggplot(
+  data = df, 
+  aes(
+    x = loggdpPercap, 
+    y = year, 
+    fill = stat(quantile)))+
+  stat_density_ridges(
+    geom = "density_ridges_gradient",
+    calc_ecdf = TRUE, 
+    quantiles = 4, 
+    quantile_lines = TRUE)+
+  labs(
+    title = "Log GDP/ Capita over Time by Contintent",
+    caption = "Note: Oceania Excluded")+
+  xlab("Log GDP/ Cap")+
+  ylab("Year")+
+  facet_wrap(~continent)+
+  theme_bw()
+```
+
+It may also be interesting to investigate any potential relationship between the GDP/ Capita and the life expectancy per contintent. 
+
+```{r}
+# Plotting the Log life expectancy against the log gdp / cap 
+palette <- colorRampPalette(c("red", "blue"))(12)
+
+ggplot(
+  data = df, 
+  aes(x = loggdpPercap, 
+      y = loglifeExp, 
+      color = year))+
+  geom_point()+
+  facet_wrap(~continent)+
+  theme_bw()+
+  labs(
+    title = "Log Life Expectancy against Log GDP / Capita per Continent",
+    caption = "Note: Oceania excluded")+
+  xlab("Log GDP/ Capita")+
+  ylab("Log Life Expectancy")+
+  scale_color_manual(values = palette)
+
+```
+
 
 # References: 
 ggplot2: https://cran.r-project.org/package=ggplot2, gapminder: https://cran.r-project.org/package=gapminder, ggridges: https://cran.r-project.org/package=ggridges
