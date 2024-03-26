@@ -111,7 +111,8 @@ palette <- colorRampPalette(c("red", "blue"))(12)
 ggplot(
   data = df, 
   aes(x = loggdpPercap, 
-      y = loglifeExp, 
+      y = loglifeExp,
+      size = loggdpPercap,
       color = year))+
   geom_point()+
   facet_wrap(~continent)+
