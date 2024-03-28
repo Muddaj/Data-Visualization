@@ -5,7 +5,11 @@ date: "Spring 2024"
 output: html_document
 ---
 
-In this project I showcase some of my visualization skills in R. In the first chunk of code, I perform some data manipulation, 
+In this project I showcase some of my visualization skills in R.
+
+# Data Manipulation
+ In the first chunk of code, I perform some data manipulation. 
+ 
 ```{r, message=FALSE, warning=FALSE}
 rm(list = ls())
 
@@ -15,6 +19,8 @@ library(gapminder)
 library(ggridges)
 library(gganimate)
 library(gifski)
+library(stargazer)
+library(olsrr)
 
 # Data 
 df <- gapminder
@@ -33,7 +39,9 @@ df <- subset(df, continent != "Oceania")
 
 ```
 
-It may also be interesting to investigate any potential relationship between the GDP/ Capita and the life expectancy per contintent. 
+# Data Visualization
+
+It may be interesting to investigate any potential relationship between the GDP/ Capita and the life expectancy per contintent. 
 
 ```{r}
 # Plotting the life expectancy against the gdp / cap 
@@ -88,7 +96,7 @@ myplot2
 
 ```
 
-I want to find out if what the trend has been with regard to life expectancy in the world. Note that the data excludes Oceania. It appears that the median life expectancy (the line separating the central quantiles) has increased over time. The density in 1952 are clearly different from the density of 2007, in 1952 the highest density is somewhere between 25 and 50 and the highest density is around 75. 
+I want to find out if the trend has been with regard to life expectancy in the world. Note that the data excludes Oceania. It appears that the median life expectancy (the line separating the central quantiles) has increased over time. The density in 1952 are clearly different from the density of 2007, in 1952 the highest density is somewhere between 25 and 50 and the highest density is around 75. 
 ```{r, warning = FALSE, message=FALSE}
 # Plot Life Expectancy over Time
 ggplot(
@@ -161,6 +169,42 @@ ggplot(
   theme_bw()
 ```
 
+# Modelling 
+
+From the plots, one may suspect a relationship between GDP/ Capita and life expectancy. However, it also seemed that the life expectancy generally has increased over the years and evolved differently per continent. To investigate this, I fit a linear regression model to the data. I consider life expectancy as the outcome variable, and GDP/ Capita, the year and continent as the covariates. I fit one reduced model using only GDP/ Capita as the covariate, and another model that includes the other covariates as well. 
+
+## Fitted Model 
+
+```{r, warning = FALSE, message=FALSE}
+
+# Linear regression model, only GDP per cap as predictor 
+model1 <- lm(lifeExp ~ gdpPercap, 
+                data = df)
+
+# Linear regression model, include 
+model2 <- lm(lifeExp ~ gdpPercap + year + continent,
+                 data = df)
+
+stargazer::stargazer(model1, model2, type = "text")
+
+```
+
+The $\beta$ coefficient estimate for GDP/ Capita is different between the models, perhaps indicating that by excluding the year and continent variables the model suffered from omitted variable bias. Looking at the adjusted $R^2$, it is greater for the second model, indicating that the covariates in the model to some degree explains the variation in the outcome variable life expectancy. Also, the residual standard error is smaller for the second model, indicating that the second model may be associated with less uncertainty compared to model 1. 
+
+## Residual Analyis 
+
+I investigate if the error terms are normally distributed. Looking at the QQ-plot, the sample quantiles deviates away some from the theoretical quantiles. So it appears that the residuals are atleast not perfectly normal. I also test this formally, and some the test results are associated with p-values close to or equal to 0, speaking against the null hypothesis that the observed quantiles are equal to the theoretical quantiles. However one test is associated with a p-value larger than 5%, in which case the null hypothesis is not rejected. So there is conflicting evidence. Lastly, investigate the correlation between the residuals of the model with normal residuals. The correlation is high, indicating at least some similarity to normally distributed residuals.
+
+```{r}
+# QQ plot of model 2
+ols_plot_resid_qq(model2)
+
+# Test of normality of the residuals 
+ols_test_normality(model2)
+
+# Correlation between my residuals and normal residuals 
+ols_test_correlation(model2)
+```
 
 
 
@@ -170,4 +214,6 @@ gapminder: https://cran.r-project.org/package=gapminder,
 ggridges: https://cran.r-project.org/package=ggridges
 gganimate: https://cran.r-project.org/package=gganimate
 gifski: https://cran.r-project.org/package=gifski
+stargazer: https://cran.r-project.org/package=stargazer
+olsrr: 
 
