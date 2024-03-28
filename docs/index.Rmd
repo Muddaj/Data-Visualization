@@ -13,6 +13,8 @@ rm(list = ls())
 library(ggplot2)
 library(gapminder)
 library(ggridges)
+library(gganimate)
+library(gifski)
 
 # Data 
 df <- gapminder
@@ -23,23 +25,77 @@ df$loglifeExp <- log(df$lifeExp)
 df$loggdpPercap <- log(df$gdpPercap)
 df$logpop <- df$pop
 
-# I want one factor version of the year variable, and one numeric
-df$year <- as.factor(df$year)
-df$yearnum <- as.numeric(df$year)
+# I want one factor version of the year variable
+df$factor_year <- as.factor(df$year)
 
 # I exclude Oceania
 df <- subset(df, continent != "Oceania")
 
 ```
 
-First I want to find out if what the trend has been with regard to life expectancy in the world. Note that the data excludes Oceania. It appears that the median life expectancy (the line separating the central quantiles) has increased over time. The density in 1952 are clearly different from the density of 2007, in 1952 the highest density is somewhere between 25 and 50 and the highest density is around 75. 
+It may also be interesting to investigate any potential relationship between the GDP/ Capita and the life expectancy per contintent. 
+
+```{r}
+# Plotting the life expectancy against the gdp / cap 
+
+myplot <- ggplot(
+  data = df, 
+  aes(x = gdpPercap, 
+      y = lifeExp,
+      size = pop,
+      colour = country))+
+  geom_point(show.legend = FALSE)+
+  scale_colour_manual(values = gapminder::country_colors)+
+  facet_wrap(~continent)+
+  theme_bw()+
+  labs(title = "Life Expectancy against GDP/ Capita over time", 
+       subtitle = "year: {frame_time}",
+       x = "GDP/ Capita",
+       y = "Life Expectancy",
+       caption = "Based on Gapminder Data from 1952 and 2007.")+
+  gganimate::transition_time(year)+
+  ease_aes("linear")
+
+myplot
+```
+
+I also use the log versions of the variables
+
+```{r}
+
+# Plotting the Log life expectancy against the log gdp / cap 
+
+myplot2 <- ggplot(
+  data = df, 
+  aes(x = loggdpPercap, 
+      y = loglifeExp,
+      size = pop,
+      colour = country))+
+  geom_point(show.legend = FALSE)+
+  scale_colour_manual(values = gapminder::country_colors)+
+  facet_wrap(~continent)+
+  theme_bw()+
+  labs(title = "Log Life Expectancy against Log GDP/ Capita over time", 
+       subtitle = "year: {frame_time}",
+       x = "Log GDP/ Capita",
+       y = "Log Life Expectancy",
+       caption = "Based on Gapminder Data from 1952 and 2007.")+
+  gganimate::transition_time(year)+
+  gganimate::ease_aes("linear")
+
+myplot2
+
+
+```
+
+I want to find out if what the trend has been with regard to life expectancy in the world. Note that the data excludes Oceania. It appears that the median life expectancy (the line separating the central quantiles) has increased over time. The density in 1952 are clearly different from the density of 2007, in 1952 the highest density is somewhere between 25 and 50 and the highest density is around 75. 
 ```{r, warning = FALSE, message=FALSE}
 # Plot Life Expectancy over Time
 ggplot(
   data = df, 
   aes(
     x = lifeExp, 
-    y = year,
+    y = factor_year,
     fill = stat(quantile)))+
   stat_density_ridges(
     geom = "density_ridges_gradient", 
@@ -48,6 +104,7 @@ ggplot(
     quantile_lines = TRUE)+
   labs(
     title = "Life Expectancy over Time in the World",
+    subtitle = "Based on Gapminder Data between 1952 and 2007",
     caption = "Note: Oceania Excluded")+
   xlab("Life Expectancy")+
   ylab("Year")+
@@ -63,7 +120,7 @@ ggplot(
   data = df, 
   aes(
     x = lifeExp, 
-    y = year, 
+    y = factor_year, 
       fill = stat(quantile)))+
   stat_density_ridges(
     geom = "density_ridges_gradient", 
@@ -72,6 +129,7 @@ ggplot(
     quantile_lines = TRUE)+
   labs(
     title = "Life Expectancy over Time by Contintent",
+    subtitle = "Based on Gapminder Data between 1952 and 2007",
     caption = "Note: Oceania Excluded")+
   xlab("Life Expectancy")+
   ylab("Year")+
@@ -86,7 +144,7 @@ ggplot(
   data = df, 
   aes(
     x = loggdpPercap, 
-    y = year, 
+    y = factor_year, 
     fill = stat(quantile)))+
   stat_density_ridges(
     geom = "density_ridges_gradient",
@@ -95,6 +153,7 @@ ggplot(
     quantile_lines = TRUE)+
   labs(
     title = "Log GDP/ Capita over Time by Contintent",
+    subtitle = "Based on Gapminder Data between 1952 and 2007",
     caption = "Note: Oceania Excluded")+
   xlab("Log GDP/ Cap")+
   ylab("Year")+
@@ -102,30 +161,13 @@ ggplot(
   theme_bw()
 ```
 
-It may also be interesting to investigate any potential relationship between the GDP/ Capita and the life expectancy per contintent. 
 
-```{r}
-# Plotting the Log life expectancy against the log gdp / cap 
-palette <- colorRampPalette(c("red", "blue"))(12)
-
-ggplot(
-  data = df, 
-  aes(x = loggdpPercap, 
-      y = loglifeExp,
-      size = loggdpPercap,
-      color = year))+
-  geom_point()+
-  facet_wrap(~continent)+
-  theme_bw()+
-  labs(
-    title = "Log Life Expectancy against Log GDP / Capita per Continent",
-    caption = "Note: Oceania excluded")+
-  xlab("Log GDP/ Capita")+
-  ylab("Log Life Expectancy")+
-  scale_color_manual(values = palette)
-
-```
 
 
 # References: 
-ggplot2: https://cran.r-project.org/package=ggplot2, gapminder: https://cran.r-project.org/package=gapminder, ggridges: https://cran.r-project.org/package=ggridges
+ggplot2: https://cran.r-project.org/package=ggplot2, 
+gapminder: https://cran.r-project.org/package=gapminder, 
+ggridges: https://cran.r-project.org/package=ggridges
+gganimate: https://cran.r-project.org/package=gganimate
+gifski: https://cran.r-project.org/package=gifski
+
