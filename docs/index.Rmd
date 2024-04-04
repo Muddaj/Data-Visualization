@@ -39,6 +39,7 @@ df <- subset(df, continent != "Oceania")
 
 ```
 
+
 # Data Visualization
 
 It may be interesting to investigate any potential relationship between the GDP/ Capita and the life expectancy per contintent. 
